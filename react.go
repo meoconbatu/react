@@ -10,7 +10,13 @@ type InputCellImpl struct {
 }
 type ComputeCellImpl struct {
 	Cell
-	f func(int) int
+	f         func(int) int
+	callbacks []func(int)
+}
+type ComputeCell2Impl struct {
+	c1, c2    Cell
+	f         func(int, int) int
+	callbacks []func(int)
 }
 type CellImpl struct {
 	v int
@@ -28,6 +34,12 @@ func (c *ComputeCellImpl) Value() int {
 	f := c.f
 	//	}
 	return f(c.Cell.Value())
+}
+func (c *ComputeCell2Impl) Value() int {
+	//	if c.f != nil {
+	f := c.f
+	//	}
+	return f(c.c1.Value(), c.c2.Value())
 }
 func (i *InputCellImpl) SetValue(in int) {
 	i.v = in
@@ -53,13 +65,24 @@ func (r ReactorImpl) CreateCompute1(c Cell, f func(int) int) ComputeCell {
 }
 
 func (r ReactorImpl) CreateCompute2(c1 Cell, c2 Cell, f func(int, int) int) ComputeCell {
-	cc := new(ComputeCellImpl)
+	cc := new(ComputeCell2Impl)
 	//	cc.CellImpl.v = f(c1.Value(), c2.Value())
+	cc.c1 = c1
+	cc.c2 = c2
+	cc.f = f
 	return cc
 }
 
 func (c *ComputeCellImpl) AddCallback(f func(int)) Canceler {
 	//c.funcs = append(c.funcs, f)
 	cc := new(CancelerImpl)
+	c.callbacks = append(c.callbacks, f)
+	return cc
+}
+
+func (c *ComputeCell2Impl) AddCallback(f func(int)) Canceler {
+	//c.funcs = append(c.funcs, f)
+	cc := new(CancelerImpl)
+	c.callbacks = append(c.callbacks, f)
 	return cc
 }
