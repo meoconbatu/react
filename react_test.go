@@ -45,8 +45,8 @@ func TestBasicCompute1(t *testing.T) {
 	i := r.CreateInput(1)
 	c := r.CreateCompute1(i, func(v int) int { return v + 1 })
 	assertCellValue(t, c, 2, "c.Value() isn't properly computed based on initial input cell value")
-	i.SetValue(2)
-	assertCellValue(t, c, 3, "c.Value() isn't properly computed based on changed input cell value")
+	i.SetValue(5)
+	assertCellValue(t, c, 6, "c.Value() isn't properly computed based on changed input cell value")
 }
 
 // The value of a compute 2 cell is determined by the value of the dependencies.
