@@ -23,6 +23,13 @@ func (c CancelerImpl) Cancel() {
 func (c CellImpl) Value() int {
 	return c.v
 }
+func (c *ComputeCellImpl) Value() int {
+	if c.funcs != nil {
+		f := c.funcs[0]
+		f(c.v)
+	}
+	return c.v
+}
 func (i *InputCellImpl) SetValue(in int) {
 	i.v = in
 }
@@ -40,6 +47,7 @@ func (r ReactorImpl) CreateInput(input int) InputCell {
 func (r ReactorImpl) CreateCompute1(c Cell, f func(int) int) ComputeCell {
 	cc := new(ComputeCellImpl)
 	cc.CellImpl.v = f(c.Value())
+	cc.AddCallback(f)
 	return cc
 }
 
@@ -49,7 +57,7 @@ func (r ReactorImpl) CreateCompute2(c1 Cell, c2 Cell, f func(int, int) int) Comp
 	return cc
 }
 
-func (c ComputeCellImpl) AddCallback(f func(int)) Canceler {
+func (c *ComputeCellImpl) AddCallback(f func(int)) Canceler {
 	c.funcs = append(c.funcs, f)
 	cc := new(CancelerImpl)
 	return cc
