@@ -2,87 +2,68 @@ package react
 
 const testVersion = 5
 
-type ReactorImpl struct {
-	Cell
-}
-type InputCellImpl struct {
-	CellImpl
-}
-type ComputeCellImpl struct {
-	Cell
-	f         func(int) int
-	callbacks []func(int)
-}
-type ComputeCell2Impl struct {
-	c1, c2    Cell
-	f         func(int, int) int
-	callbacks []func(int)
-}
-type CellImpl struct {
-	v int
-}
-type CancelerImpl struct {
+type Reactive struct {
 }
 
-func (c CancelerImpl) Cancel() {
+func (r *Celler) SetValue(input int) {
+	r.i = input
+	if r.callBack != nil {
+		r.callBack(r.i)
+	}
 }
-func (c CellImpl) Value() int {
-	return c.v
+
+type Celler struct {
+	i        int
+	callBack func(int)
+	c        *ComputeCeller
 }
-func (c *ComputeCellImpl) Value() int {
-	//	if c.f != nil {
-	f := c.f
-	//	}
-	return f(c.Cell.Value())
+
+func (c Celler) Value() int {
+	if c.c.f != nil {
+		return c.c.f(c.c.c.Value())
+	}
+	if c.c.ff != nil {
+		return c.c.ff(c.c.c.Value(), c.c.c2.Value())
+	}
+	return c.i
 }
-func (c *ComputeCell2Impl) Value() int {
-	//	if c.f != nil {
-	f := c.f
-	//	}
-	return f(c.c1.Value(), c.c2.Value())
+func (cc *Celler) AddCallback(f func(int)) Canceler {
+	cc.callBack = f
+	return *new(Reactive)
 }
-func (i *InputCellImpl) SetValue(in int) {
-	i.v = in
+
+type ComputeCeller struct {
+	c  *Celler
+	c2 *Celler
+	f  func(int) int
+	ff func(int, int) int
 }
-func New() Reactor {
-	r := ReactorImpl{}
+
+func (c Reactive) Cancel() {
+
+}
+func (r *Reactive) CreateInput(input int) InputCell {
+	ic := new(Celler)
+	ic.c = new(ComputeCeller)
+	ic.SetValue(input)
+	return ic
+}
+func (r *Reactive) CreateCompute1(c Cell, f func(int) int) ComputeCell {
+	cc := new(Celler)
+	cc.c = new(ComputeCeller)
+	cc.c.f = f
+	cc.c.c = c.(*Celler)
+	return cc
+}
+func (r *Reactive) CreateCompute2(c Cell, c1 Cell, f func(int, int) int) ComputeCell {
+	cc := new(Celler)
+	cc.c = new(ComputeCeller)
+	cc.c.ff = f
+	cc.c.c = c.(*Celler)
+	cc.c.c2 = c1.(*Celler)
+	return cc
+}
+func New() *Reactive {
+	r := new(Reactive)
 	return r
-}
-
-func (r ReactorImpl) CreateInput(input int) InputCell {
-	i := new(InputCellImpl)
-	i.SetValue(input)
-	return i
-}
-
-func (r ReactorImpl) CreateCompute1(c Cell, f func(int) int) ComputeCell {
-	cc := new(ComputeCellImpl)
-	//	cc.CellImpl.v = f(c.Value())
-	//cc.AddCallback(f)
-	cc.Cell = c
-	cc.f = f
-	return cc
-}
-
-func (r ReactorImpl) CreateCompute2(c1 Cell, c2 Cell, f func(int, int) int) ComputeCell {
-	cc := new(ComputeCell2Impl)
-	//	cc.CellImpl.v = f(c1.Value(), c2.Value())
-	cc.c1 = c1
-	cc.c2 = c2
-	cc.f = f
-	return cc
-}
-
-func (c *ComputeCellImpl) AddCallback(f func(int)) Canceler {
-	//c.funcs = append(c.funcs, f)
-	cc := new(CancelerImpl)
-	c.callbacks = append(c.callbacks, f)
-	return cc
-}
-
-func (c *ComputeCell2Impl) AddCallback(f func(int)) Canceler {
-	//c.funcs = append(c.funcs, f)
-	cc := new(CancelerImpl)
-	c.callbacks = append(c.callbacks, f)
-	return cc
 }
